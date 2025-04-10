@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMBA LAMINATES</title>
+    <link rel="icon" href="images.jpg" type="image/x-icon">
+    <link rel="stylesheet" href="s.css">
+</head>
+<body>
+    <!-- Admin Login Form -->
+    <div id="login-form" class="login-form">
+        <h2>Login</h2>
+        <label for="username"></label>
+        <input type="text" id="username" placeholder="Enter User Name">
+        <label for="password"></label>
+        <input type="password" id="password" placeholder="Enter Password">
+        <button onclick="authenticateAdmin()">Login</button>
+    </div>
+
+    <div id="dashboard" class="container" style="display: none;">
+        <div class="sidebar" id="sidebar">
+            <h2>AMBA LAMINATES PVT LTD.<br><br>( ALL SHEETS)</h2>
+            <ul>
+                <li><a href="https://docs.google.com/spreadsheets/d/1bKCOEyLMtY6-fqqrW47L1ZmfKMW8GJS5Gyb-7k_8HSI/edit?usp=sharing">PRODUCTION TRACK</a></li>
+                <li><a href="https://docs.google.com/spreadsheets/d/1V_97CNeyZCySI7obEGEdvWvIKB-_oIGcQe9vP_RUxcc/edit?usp=sharing">TOTAL DISPATCH</a></li>
+                <li><a href="https://docs.google.com/spreadsheets/d/1YP9Y9wTyrJZ3Fn-3oSvgMsEPMvKMeqfs4LDAM0A9cXE/edit?usp=sharing">ORDER TO DELIVERY FMS APR-2024</a></li>
+                <li><a href="https://docs.google.com/spreadsheets/d/1HtnhzcBfbcXc5UA8adHIzFtTiug2zRUVLlXO54pFkGk/edit?usp=sharing">FACTORY STOCK SEPTEMBER IMS</a></li>
+            </ul>
+        </div>
+
+        <div class="dashboard">
+            <h1 style="text-align: center;">AMBA LAMINATES PVT LTD. (FY 24-25)</h1>
+            <div class="date-filter">
+                <label for="start-date">Start Date:</label>
+                <input type="date" id="start-date">
+                <label for="end-date">End Date:</label>
+                <input type="date" id="end-date">
+                <button onclick="applyDateFilter()">Apply Filter</button>
+            </div>
+            <div class="stats">
+                <div class="stat-card">
+                    <h2>Total Orders</h2>
+                    <p id="total-orders">Loading...</p>
+                </div>
+                <div class="stat-card">
+                    <h2>Total Party</h2>
+                    <p id="total-party">Loading...</p>
+                </div>
+
+
+
+                <div class="stat-card">
+                    <h2>Total Qty Ordered</h2>
+                    <p id="total-qty-ordered">Loading...</p>
+                </div>
+                <div class="stat-card">
+                    <h2>Total Dispatch</h2>
+                    <p id="total-dispatch">Loading...</p>
+                </div>
+                <div class="stat-card">
+                    <h2>Total Production Press 1</h2>
+                    <p id="total-production-press1">Loading...</p>
+                </div>
+                <div class="stat-card">
+                    <h2>Total Production Press 2</h2>
+                    <p id="total-production-press2">Loading...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="s.js"></script>
+    <script>
+        const validAdminUsername = "admin";
+        const validAdminPassword = "ambalam@85";
+        const validUser1Username = "user1";
+        const validUser1Password = "user@123";
+
+        function authenticateAdmin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === validAdminUsername && password === validAdminPassword) {
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('sidebar').style.display = 'block'; 
+            } else if (username === validUser1Username && password === validUser1Password) {
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('sidebar').style.display = 'none'; 
+            } else {
+                alert("Invalid username or password");
+                document.getElementById('login-form').style.display = 'block';
+                document.getElementById('dashboard').style.display = 'none';
+                document.getElementById('sidebar').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
+
+<style>
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    background-color: lightyellow;
+}
+
+.sidebar {
+    background-color: lightgreen;
+    color: black;
+    width: 250px;
+    padding: 20px;
+    box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    display: none;
+}
+
+.sidebar h2 {
+    font-size: 15px;
+    margin-bottom: 30px;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 10px 0;
+}
+
+.sidebar ul li a {
+    color: black;
+    text-decoration: none;
+    font-size: 18px;
+    transition: color 0.3s ease;
+}
+
+.sidebar ul li a:hover {
+    color: lightcoral;
+}
+
+.container {
+    display: flex;
+    margin-left: 250px;
+    width: 100%;
+    padding: 30px;
+    overflow-x: auto;
+}
+
+.dashboard {
+    width: 100%;
+    text-align: center;
+}
+
+.dashboard h1 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: #34495e;
+}
+
+.date-filter {
+    margin-bottom: 30px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-left: 30px;
+}
+
+.date-filter label {
+    font-size: 16px;
+    color: #34495e;
+}
+
+.date-filter input {
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.date-filter button {
+    padding: 8px 16px;
+    font-size: 16px;
+    background-color: lightgreen;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.date-filter button:hover {
+    background-color: #16a085;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card h2 {
+    font-size: 22px;
+    color: #34495e;
+    margin-bottom: 10px;
+}
+
+.stat-card p {
+    font-size: 24px;
+    font-weight: bold;
+    color: #1abc9c;
+}
+
+.login-form {
+    width: 300px;
+    margin: 100px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border-radius: 8px;
+}
+
+.login-form h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #34495e;
+}
+
+.login-form label {
+    font-size: 16px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.login-form button {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    background-color: lightgreen;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.login-form button:hover {
+    background-color: #16a085;
+}
+</style>

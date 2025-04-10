@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sales Summary</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #888;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #eee;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Sales Summary</h2>
+
+  <label>Start Date: <input type="date" id="start-date" /></label>
+  <label>End Date: <input type="date" id="end-date" /></label>
+  <button onclick="fetchAndRender()">Apply Filter</button>
+  <button onclick="exportToExcel()">Export to Excel</button>
+  <button onclick="exportToPDF()">Export to PDF</button>
+  <button onclick="window.location.href='index.html'">Back</button>
+
+  <div id="table-container"></div>
+
+  <script>
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT91A_LuXxb_QVO5Q8iidQyQQCFFhkSkRnVlgJQvhgkeluHEdKJUbht_WRTbwMClofYiDm5Ej-Zw311/pub?gid=1525898616&single=true&output=csv"; // Replace this
+    function loadSalesData() {
+    const startDate = document.getElementById("start-date").value;
+    const endDate = document.getElementById("end-date").value;
+
+    // Don't proceed if dates are not selected
+    if (!startDate || !endDate) {
+        document.getElementById("table-container").innerHTML = `<p style="text-align:center;">Please select both start and end dates to view data.</p>`;
+        return;
+    }
+
+    fetch(sheetUrl)
+        .then((res) => res.text())
+        .then((data) => {
+            const rows = Papa.parse(data.trim(), { header: true }).data;
+
+            const filteredRows = rows.filter((row) => {
+                const [day, month, year] = row["D"].split("/");
+                const rowDate = new Date(`${year}-${month}-${day}`);
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                return rowDate >= start && rowDate <= end;
+            });
+
+            buildSummaryTable(filteredRows);
+        })
+        .catch((err) => console.error("Error loading sheet data:", err));
+}
+
+
+    async function fetchAndRender() {
+      const start = document.getElementById("start-date").value;
+      const end = document.getElementById("end-date").value;
+      const res = await fetch(sheetUrl);
+      const csv = await res.text();
+      const rows = csv.split("\n").map(r => r.split(","));
+
+      const dateIndex = 3;
+      const qtyIndex = 4;
+      const partyIndex = 5;
+      const catIndex = 7;
+
+      const dataMap = {};
+      const partySet = new Set();
+      const categorySet = new Set();
+
+      rows.slice(1).forEach(row => {
+        const date = parseDate(row[dateIndex]);
+        const qty = parseFloat(row[qtyIndex]) || 0;
+        const party = row[partyIndex]?.trim();
+        const category = row[catIndex]?.trim();
+
+        if (!date || !party || !category) return;
+        if ((start && date < new Date(start)) || (end && date > new Date(end))) return;
+
+        const key = `${party}_${category}`;
+        dataMap[key] = (dataMap[key] || 0) + qty;
+        partySet.add(party);
+        categorySet.add(category);
+      });
+
+      const parties = Array.from(partySet).sort();
+      const categories = Array.from(categorySet).sort();
+
+      let html = `<table><thead><tr><th>Party Name</th>`;
+      categories.forEach(cat => html += `<th>${cat}</th>`);
+      html += `<th>Grand Total</th></tr></thead><tbody>`;
+
+      let colTotals = {};
+      let grandTotalAll = 0;
+
+      parties.forEach(party => {
+        let rowTotal = 0;
+        html += `<tr><td>${party}</td>`;
+        categories.forEach(cat => {
+          const key = `${party}_${cat}`;
+          const val = dataMap[key] || 0;
+          rowTotal += val;
+          colTotals[cat] = (colTotals[cat] || 0) + val;
+          html += `<td>${val.toFixed(2)}</td>`;
+        });
+        grandTotalAll += rowTotal;
+        html += `<td><b>${rowTotal.toFixed(2)}</b></td></tr>`;
+      });
+
+      html += `<tr><th>Grand Total</th>`;
+      categories.forEach(cat => html += `<th><b>${(colTotals[cat] || 0).toFixed(2)}</b></th>`);
+      html += `<th><b>${grandTotalAll.toFixed(2)}</b></th></tr>`;
+      html += `</tbody></table>`;
+
+      document.getElementById("table-container").innerHTML = html;
+    }
+
+    function parseDate(dateStr) {
+      if (!dateStr) return null;
+      const [d, m, y] = dateStr.split("/");
+      return new Date(`${y}-${m}-${d}`);
+    }
+
+    function exportToExcel() {
+      const table = document.querySelector("table");
+      const wb = XLSX.utils.table_to_book(table);
+      XLSX.writeFile(wb, "Sales_Summary.xlsx");
+    }
+
+    function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF("l", "pt", "a4");
+      doc.html(document.querySelector("table"), {
+        callback: function (pdf) {
+          pdf.save("Sales_Summary.pdf");
+        },
+        margin: [20, 20, 20, 20]
+      });
+    }
+  </script>
+</body>
+</html>

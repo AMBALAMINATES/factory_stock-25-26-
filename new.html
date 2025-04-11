@@ -3,9 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sales Summary</title>
+  <title>AMBA SALES SUMMARY</title>
+
+  <!-- Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -17,12 +22,12 @@
       margin-top: 20px;
     }
     th, td {
-      border: 1px solid #888;
+      border: 1px solid black;
       padding: 8px;
       text-align: center;
     }
     th {
-      background-color: #eee;
+      background-color: lightgreen;
     }
     button {
       margin: 10px;
@@ -31,7 +36,7 @@
   </style>
 </head>
 <body>
-  <h2>Sales Summary</h2>
+  <h2 style="text-align: center;">Sales Summary Amba</h2>
 
   <label>Start Date: <input type="date" id="start-date" /></label>
   <label>End Date: <input type="date" id="end-date" /></label>
@@ -43,43 +48,15 @@
   <div id="table-container"></div>
 
   <script>
-    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT91A_LuXxb_QVO5Q8iidQyQQCFFhkSkRnVlgJQvhgkeluHEdKJUbht_WRTbwMClofYiDm5Ej-Zw311/pub?gid=1525898616&single=true&output=csv"; // Replace this
-    function loadSalesData() {
-    const startDate = document.getElementById("start-date").value;
-    const endDate = document.getElementById("end-date").value;
-
-    // Don't proceed if dates are not selected
-    if (!startDate || !endDate) {
-        document.getElementById("table-container").innerHTML = `<p style="text-align:center;">Please select both start and end dates to view data.</p>`;
-        return;
-    }
-
-    fetch(sheetUrl)
-        .then((res) => res.text())
-        .then((data) => {
-            const rows = Papa.parse(data.trim(), { header: true }).data;
-
-            const filteredRows = rows.filter((row) => {
-                const [day, month, year] = row["D"].split("/");
-                const rowDate = new Date(`${year}-${month}-${day}`);
-                const start = new Date(startDate);
-                const end = new Date(endDate);
-                return rowDate >= start && rowDate <= end;
-            });
-
-            buildSummaryTable(filteredRows);
-        })
-        .catch((err) => console.error("Error loading sheet data:", err));
-}
-
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT91A_LuXxb_QVO5Q8iidQyQQCFFhkSkRnVlgJQvhgkeluHEdKJUbht_WRTbwMClofYiDm5Ej-Zw311/pub?gid=1525898616&single=true&output=csv";
 
     async function fetchAndRender() {
       const start = document.getElementById("start-date").value;
       const end = document.getElementById("end-date").value;
       const res = await fetch(sheetUrl);
       const csv = await res.text();
-      const rows = csv.split("\n").map(r => r.split(","));
 
+      const rows = csv.split("\n").map(r => r.split(","));
       const dateIndex = 3;
       const qtyIndex = 4;
       const partyIndex = 5;
@@ -142,21 +119,76 @@
       return new Date(`${y}-${m}-${d}`);
     }
 
+    // Function to export to Excel
     function exportToExcel() {
       const table = document.querySelector("table");
+
+      if (!table) {
+        alert("Please apply a filter and load the table before exporting.");
+        return;
+      }
+
       const wb = XLSX.utils.table_to_book(table);
-      XLSX.writeFile(wb, "Sales_Summary.xlsx");
+
+      // Get selected start and end dates
+      const startDate = document.getElementById("start-date").value;
+      const endDate = document.getElementById("end-date").value;
+
+      // Format the dates as YYYY-MM-DD
+      const formattedStartDate = new Date(startDate).toISOString().split('T')[0];
+      const formattedEndDate = new Date(endDate).toISOString().split('T')[0];
+
+      // Create the filename with date range
+      const filename = `Sales_Summary_${formattedStartDate}_to_${formattedEndDate}.xlsx`;
+
+      XLSX.writeFile(wb, filename);
     }
 
+    // Function to export to PDF
     function exportToPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF("l", "pt", "a4");
-      doc.html(document.querySelector("table"), {
-        callback: function (pdf) {
-          pdf.save("Sales_Summary.pdf");
-        },
-        margin: [20, 20, 20, 20]
+
+      const table = document.querySelector("table");
+      if (!table) {
+        alert("Please apply a filter and load the table before exporting.");
+        return;
+      }
+
+      const headers = [];
+      const body = [];
+
+      const headerCells = table.querySelectorAll("thead tr th");
+      headerCells.forEach(cell => headers.push(cell.innerText));
+
+      const rows = table.querySelectorAll("tbody tr");
+      rows.forEach(row => {
+        const rowData = [];
+        row.querySelectorAll("td, th").forEach(cell => rowData.push(cell.innerText));
+        body.push(rowData);
       });
+
+      doc.autoTable({
+        head: [headers],
+        body: body,
+        startY: 40,
+        margin: { top: 40, left: 20, right: 20 },
+        styles: { fontSize: 8, cellPadding: 3 },
+        headStyles: { fillColor: [144, 238, 144] }, // light green
+      });
+
+      // Get selected start and end dates
+      const startDate = document.getElementById("start-date").value;
+      const endDate = document.getElementById("end-date").value;
+
+      // Format the dates as YYYY-MM-DD
+      const formattedStartDate = new Date(startDate).toISOString().split('T')[0];
+      const formattedEndDate = new Date(endDate).toISOString().split('T')[0];
+
+      // Create the filename with date range
+      const filename = `Sales_Summary_${formattedStartDate}_to_${formattedEndDate}.pdf`;
+
+      doc.save(filename);
     }
   </script>
 </body>

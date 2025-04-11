@@ -59,7 +59,7 @@
 
       const rows = csv.split("\n").map(r => r.split(","));
 
-      // Column indexes (0-based)
+     
       const dateIndex = 0;
       const qtyIndex = 2;
       const partyIndex = 3;
@@ -75,7 +75,7 @@
         const party = row[partyIndex]?.trim();
         const category = row[catIndex]?.trim();
 
-        // Check if category is invalid (empty, NA, #NA, #N/A)
+       
         if (!date || !party || isInvalidCategory(category)) return;
 
         if ((start && date < new Date(start)) || (end && date > new Date(end))) return;
@@ -86,9 +86,9 @@
         categorySet.add(category);
       });
 
-      // Filter out any invalid categories just in case
+      
       const categories = Array.from(categorySet)
-        .filter(cat => !isInvalidCategory(cat)) // Exclude NA, #NA, #N/A, etc.
+        .filter(cat => !isInvalidCategory(cat)) 
         .sort();
       const parties = Array.from(partySet).sort();
 

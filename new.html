@@ -14,30 +14,157 @@
 
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       padding: 20px;
+      background-color: #f9f9f9;
+      color: #333;
     }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+
+    label {
+      margin-right: 15px;
+      font-weight: 500;
+    }
+
+    input[type="date"] {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+    button {
+      margin: 10px 5px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background-color: #3498db;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
     table {
       border-collapse: collapse;
       width: 100%;
-      margin-top: 20px;
+      margin-top: 30px;
+      background-color: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      border-radius: 6px;
+      overflow: hidden;
     }
+
     th, td {
-      border: 1px solid black;
-      padding: 8px;
+      padding: 12px;
       text-align: center;
+      border-bottom: 1px solid #eee;
     }
+
     th {
-      background-color: lightgreen;
+      background-color: #2ecc71;
+      color: white;
+      font-weight: 600;
     }
-    button {
-      margin: 10px;
-      padding: 10px 20px;
+
+    tbody tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    tbody tr:hover {
+      background-color: #eaf6ff;
+    }
+
+    #table-container {
+      overflow-x: auto;
+    }
+
+    
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+
+      label {
+        font-size: 14px;
+      }
+
+      input[type="date"], button {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 8px;
+      }
+    }
+
+    @media (min-width: 601px) and (max-width: 1024px) {
+      h2 {
+        font-size: 24px;
+      }
+
+      label {
+        font-size: 16px;
+      }
+
+      button {
+        width: 48%;
+        margin-right: 4%;
+      }
+
+      table {
+        font-size: 14px;
+      }
+
+      th, td {
+        padding: 10px;
+      }
+    }
+
+    @media (min-width: 1025px) {
+      h2 {
+        font-size: 30px;
+      }
+
+      label {
+        font-size: 18px;
+      }
+
+      table {
+        font-size: 16px;
+      }
+
+      th, td {
+        padding: 12px;
+      }
+
+      button {
+        width: auto;
+        margin-right: 5px;
+      }
     }
   </style>
 </head>
 <body>
-  <h2 style="text-align: center;">Sales Summary Amba</h2>
+  <h2 id="heading">Sales Summary Amba</h2>
 
   <label>Start Date: <input type="date" id="start-date" /></label>
   <label>End Date: <input type="date" id="end-date" /></label>
@@ -75,7 +202,6 @@
         const party = row[partyIndex]?.trim();
         const category = row[catIndex]?.trim();
 
-       
         if (!date || !party || isInvalidCategory(category)) return;
 
         if ((start && date < new Date(start)) || (end && date > new Date(end))) return;
@@ -86,9 +212,8 @@
         categorySet.add(category);
       });
 
-      
       const categories = Array.from(categorySet)
-        .filter(cat => !isInvalidCategory(cat)) 
+        .filter(cat => !isInvalidCategory(cat))
         .sort();
       const parties = Array.from(partySet).sort();
 
@@ -119,6 +244,9 @@
       html += `</tbody></table>`;
 
       document.getElementById("table-container").innerHTML = html;
+
+      
+      updateHeading(start, end);
     }
 
     function parseDate(dateStr) {
@@ -127,9 +255,33 @@
       return new Date(`${y}-${m}-${d}`);
     }
 
-    // Helper function to check invalid categories (case-sensitive, includes #N/A)
     function isInvalidCategory(category) {
       return !category || category.toUpperCase() === "NA" || category.toUpperCase() === "#N/A";
+    }
+
+    function updateHeading(start, end) {
+      const heading = document.getElementById("heading");
+      if (start && end) {
+        
+        const formattedStart = formatDate(start);
+        const formattedEnd = formatDate(end);
+        heading.innerHTML = `Sales Summary From (${formattedStart} to ${formattedEnd})`;
+      } else if (start) {
+       
+        const formattedStart = formatDate(start);
+        heading.innerHTML = `Sales Summary from (${formattedStart})`;
+      } else {
+        
+        heading.innerHTML = "Sales Summary Amba";
+      }
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+      const year = String(date.getFullYear()).slice(2);
+      return `${day}-${month}-${year}`;
     }
 
     function exportToExcel() {
@@ -178,7 +330,7 @@
         startY: 40,
         margin: { top: 40, left: 20, right: 20 },
         styles: { fontSize: 8, cellPadding: 3 },
-        headStyles: { fillColor: [144, 238, 144] },
+        headStyles: { fillColor: [46, 204, 113] },
       });
 
       const startDate = document.getElementById("start-date").value;

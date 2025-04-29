@@ -120,7 +120,21 @@
         categorySet.add(category);
       });
 
-      const categories = Array.from(categorySet).filter(cat => !isInvalidCategory(cat)).sort();
+      const preferredOrder = [
+        "Z Plus series/1.0mm",
+        "Decopedia/0.8mm",
+        "OGAAN DOOR SKIN",
+        "FACELAM 0.75MM",
+        "FACELAM 0.92MM",
+        "Liner"
+      ];
+
+      const uniqueCats = Array.from(categorySet).filter(cat => !isInvalidCategory(cat));
+      const categories = [
+        ...preferredOrder.filter(cat => uniqueCats.includes(cat)),
+        ...uniqueCats.filter(cat => !preferredOrder.includes(cat))
+      ];
+
       const parties = Array.from(partySet);
       const partyTotals = {};
       parties.forEach(party => {
@@ -215,6 +229,15 @@
         body.push(rowData);
       });
 
+      const startDate = document.getElementById("start-date").value;
+      const endDate = document.getElementById("end-date").value;
+      let headingText = "Sales Summary";
+      if (startDate && endDate) headingText += ` (${formatDate(startDate)} to ${formatDate(endDate)})`;
+      else if (startDate) headingText += ` (${formatDate(startDate)})`;
+
+      doc.setFontSize(14);
+      doc.text(headingText, 40, 30);
+
       doc.autoTable({
         head: [headers],
         body: body,
@@ -224,8 +247,6 @@
         headStyles: { fillColor: [46, 204, 113] },
       });
 
-      const startDate = document.getElementById("start-date").value;
-      const endDate = document.getElementById("end-date").value;
       const filename = `Sales_Summary_${startDate}_to_${endDate}.pdf`;
       doc.save(filename);
     }

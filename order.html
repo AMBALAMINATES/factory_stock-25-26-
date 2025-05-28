@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AMBA ORDER DETAILS</title>
+  <link rel="icon" href="images.jpg" type="image/x-icon">
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+    label {
+      margin-right: 15px;
+      font-weight: 500;
+    }
+    input[type="date"] {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+    button {
+      margin: 10px 5px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background-color: #3498db;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 30px;
+      background-color: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background-color: #2ecc71;
+      color: white;
+      font-weight: 600;
+    }
+    tbody tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    tbody tr:hover {
+      background-color: #eaf6ff;
+    }
+    #table-container {
+      overflow-x: auto;
+    }
+    #totalQty {
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 18px;
+      color: #2c3e50;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <h2 id="heading">AMBA ORDER DETAILS</h2>
+
+  <label>Start Date: <input type="date" id="start-date" /></label>
+  <label>End Date: <input type="date" id="end-date" /></label>
+  <button onclick="fetchAndRender()">Apply Filter</button>
+  <button onclick="exportToExcel()">Export to Excel</button>
+  <button onclick="exportToPDF()">Export to PDF</button>
+  <button onclick="window.location.href='index.html'">Back</button>
+
+  <div id="table-container"></div>
+  <div id="totalQty">Total Quantity: 0</div>
+
+  <script>
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSix_NWw-t69LaLJ2EENmrQmmKsEzIaijoPB_ThqUpgEWMsJyvfZL5691oPBaWvCLiegI0OUKD2ha4W/pub?gid=2142342141&single=true&output=csv";
+
+    async function fetchAndRender() {
+      const startVal = document.getElementById("start-date").value;
+      const endVal = document.getElementById("end-date").value;
+      if (!startVal || !endVal) {
+        alert("Please select both start and end dates.");
+        return;
+      }
+      const start = new Date(startVal);
+      const end = new Date(endVal);
+      if (start > end) {
+        alert("Start date cannot be after end date.");
+        return;
+      }
+
+      const res = await fetch(sheetUrl);
+      const csv = await res.text();
+
+      const rows = csv.trim().split("\n").map(r => r.split(","));
+      // Your column indexes from CSV: A=0 date, C=2 partyname, E=4 address, F=5 qty
+      const dateIndex = 0;
+      const partyIndex = 2;
+      const addressIndex = 4;
+      const qtyIndex = 5;
+
+      // Map with key = party|address and sum quantities
+      const dataMap = new Map();
+      let totalQuantity = 0;
+
+      rows.slice(1).forEach(row => {
+        if (row.length <= qtyIndex) return; // skip incomplete rows
+        const date = parseDate(row[dateIndex]);
+        if (!date) return;
+        if (date < start || date > end) return;
+
+        const party = row[partyIndex]?.trim();
+        const address = row[addressIndex]?.trim() || "";
+        if (!party) return;
+
+        const qty = parseFloat(row[qtyIndex]) || 0;
+        totalQuantity += qty;
+
+        const key = party + "|" + address;
+        if (dataMap.has(key)) {
+          dataMap.set(key, { party, address, qty: dataMap.get(key).qty + qty });
+        } else {
+          dataMap.set(key, { party, address, qty });
+        }
+      });
+
+      // Build HTML table
+      let html = `<table><thead><tr>
+        <th>Party Name</th><th>Address</th><th>Quantity</th>
+      </tr></thead><tbody>`;
+
+      for (const { party, address, qty } of dataMap.values()) {
+        html += `<tr>
+          <td>${party}</td>
+          <td>${address}</td>
+          <td>${qty.toFixed(2)}</td>
+        </tr>`;
+      }
+
+      html += "</tbody></table>";
+
+      document.getElementById("table-container").innerHTML = html;
+      document.getElementById("totalQty").textContent = `Total Quantity: ${totalQuantity.toFixed(2)}`;
+      updateHeading(startVal, endVal);
+    }
+
+    function parseDate(dateStr) {
+      if (!dateStr) return null;
+      // Assuming date format DD/MM/YYYY or D/M/YYYY
+      const parts = dateStr.split("/");
+      if (parts.length !== 3) return null;
+      const [d, m, y] = parts;
+      return new Date(`${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`);
+    }
+
+    function updateHeading(start, end) {
+      const heading = document.getElementById("heading");
+      if (start && end) {
+        heading.textContent = `order detail From (${formatDate(start)} to ${formatDate(end)})`;
+      } else {
+        heading.textContent = "order detail Amba";
+      }
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return "";
+      const date = new Date(dateStr);
+      const d = String(date.getDate()).padStart(2, "0");
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const y = String(date.getFullYear()).slice(2);
+      return `${d}-${m}-${y}`;
+    }
+
+    function exportToExcel() {
+      const table = document.querySelector("table");
+      if (!table) return alert("Please apply a filter and load the table before exporting.");
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.table_to_sheet(table);
+
+      XLSX.utils.book_append_sheet(wb, ws, "order detail");
+
+      const start = document.getElementById("start-date").value;
+      const end = document.getElementById("end-date").value;
+
+      const filename = `order-detail_Amba_${formatDate(start)}_to_${formatDate(end)}.xlsx`;
+      XLSX.writeFile(wb, filename);
+    }
+
+    function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      const table = document.querySelector("table");
+      if (!table) return alert("Please apply a filter and load the table before exporting.");
+
+      const startDate = document.getElementById("start-date").value;
+      const endDate = document.getElementById("end-date").value;
+
+      doc.setFontSize(18);
+      doc.setTextColor(0, 0, 0);
+      doc.text("AMBA LAMINATES PVT LTD.", 105, 15, null, null, 'center');
+
+      let headingText = `Order details`;
+      if (startDate && endDate) headingText += ` (${formatDate(startDate)} to ${formatDate(endDate)})`;
+
+      doc.setFontSize(14);
+      doc.setTextColor(50, 50, 50);
+      doc.text(headingText, 105, 30, null, null, 'center');
+
+      doc.autoTable({
+        html: 'table',
+        startY: 35,
+        theme: 'grid',
+        headStyles: { fillColor: '#2ecc71', textColor: '#fff', fontSize: 10, fontStyle: 'bold' },
+        styles: { fontSize: 10, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.5 }
+      });
+
+      doc.save(`order_detail-Amba${formatDate(startDate)}_to_${formatDate(endDate)}.pdf`);
+    }
+  </script>
+</body>
+</html>

@@ -96,7 +96,7 @@
   <button onclick="window.location.href='index.html'">Back</button>
 
   <div id="table-container"></div>
-  <div id="totalQty">Total Quantity: 0</div>
+  <div id="totalQty">Total Quantity: 0 | Total Sent Quantity: 0</div>
 
   <script>
     const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSix_NWw-t69LaLJ2EENmrQmmKsEzIaijoPB_ThqUpgEWMsJyvfZL5691oPBaWvCLiegI0OUKD2ha4W/pub?gid=2142342141&single=true&output=csv";
@@ -119,18 +119,18 @@
       const csv = await res.text();
 
       const rows = csv.trim().split("\n").map(r => r.split(","));
-      // Your column indexes from CSV: A=0 date, C=2 partyname, E=4 address, F=5 qty
       const dateIndex = 0;
       const partyIndex = 2;
       const addressIndex = 4;
       const qtyIndex = 5;
+      const sentQtyIndex = 6;
 
-      // Map with key = party|address and sum quantities
       const dataMap = new Map();
       let totalQuantity = 0;
+      let totalSentQuantity = 0;
 
       rows.slice(1).forEach(row => {
-        if (row.length <= qtyIndex) return; // skip incomplete rows
+        if (row.length <= sentQtyIndex) return;
         const date = parseDate(row[dateIndex]);
         if (!date) return;
         if (date < start || date > end) return;
@@ -140,39 +140,48 @@
         if (!party) return;
 
         const qty = parseFloat(row[qtyIndex]) || 0;
+        const sentQty = parseFloat(row[sentQtyIndex]) || 0;
         totalQuantity += qty;
+        totalSentQuantity += sentQty;
 
         const key = party + "|" + address;
         if (dataMap.has(key)) {
-          dataMap.set(key, { party, address, qty: dataMap.get(key).qty + qty });
+          const existing = dataMap.get(key);
+          dataMap.set(key, {
+            party,
+            address,
+            qty: existing.qty + qty,
+            sentQty: existing.sentQty + sentQty
+          });
         } else {
-          dataMap.set(key, { party, address, qty });
+          dataMap.set(key, { party, address, qty, sentQty });
         }
       });
 
-      // Build HTML table
+      const sortedData = Array.from(dataMap.values()).sort((a, b) => b.sentQty - a.sentQty);
+
       let html = `<table><thead><tr>
-        <th>Party Name</th><th>Address</th><th>Quantity</th>
+        <th>Party Name</th><th>Address</th><th>Quantity</th><th>Sent Quantity</th>
       </tr></thead><tbody>`;
 
-      for (const { party, address, qty } of dataMap.values()) {
+      for (const { party, address, qty, sentQty } of sortedData) {
         html += `<tr>
           <td>${party}</td>
           <td>${address}</td>
           <td>${qty.toFixed(2)}</td>
+          <td>${sentQty.toFixed(2)}</td>
         </tr>`;
       }
 
       html += "</tbody></table>";
 
       document.getElementById("table-container").innerHTML = html;
-      document.getElementById("totalQty").textContent = `Total Quantity: ${totalQuantity.toFixed(2)}`;
+      document.getElementById("totalQty").textContent = `Total Quantity: ${totalQuantity.toFixed(2)} | Total Sent Quantity: ${totalSentQuantity.toFixed(2)}`;
       updateHeading(startVal, endVal);
     }
 
     function parseDate(dateStr) {
       if (!dateStr) return null;
-      // Assuming date format DD/MM/YYYY or D/M/YYYY
       const parts = dateStr.split("/");
       if (parts.length !== 3) return null;
       const [d, m, y] = parts;
@@ -182,9 +191,9 @@
     function updateHeading(start, end) {
       const heading = document.getElementById("heading");
       if (start && end) {
-        heading.textContent = `order detail From (${formatDate(start)} to ${formatDate(end)})`;
+        heading.textContent = `Order detail From (${formatDate(start)} to ${formatDate(end)})`;
       } else {
-        heading.textContent = "order detail Amba";
+        heading.textContent = "Order detail Amba";
       }
     }
 

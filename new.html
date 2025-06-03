@@ -206,19 +206,9 @@
     function exportToExcel() {
       const table = document.querySelector("table");
       if (!table) return alert("Please apply a filter and load the table before exporting.");
-      
+
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.table_to_sheet(table);
-
-      // Style adjustments for header and AMBA centered
-      const headingText = `Sales Summary Amba`;
-
-      ws['A1'] = { v: headingText, s: { font: { bold: true, size: 14 }, alignment: { horizontal: 'center' } } };
-      ws["A2"] = { v: `Sales Summary (${formatDate(document.getElementById("start-date").value)} to ${formatDate(document.getElementById("end-date").value)})`, s: { font: { size: 12 }, alignment: { horizontal: 'center' } } };
-
-      // Adjust column widths for clarity
-      const colWidth = Math.max(...Array.from(table.rows[0].cells).map(cell => cell.textContent.length)) * 10;
-      ws['!cols'] = Array(table.rows[0].cells.length).fill({ wpx: colWidth });
 
       XLSX.utils.book_append_sheet(wb, ws, "Sales Summary");
 
@@ -228,7 +218,8 @@
 
     function exportToPDF() {
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
+      const doc = new jsPDF("landscape", "pt", "a4");
+
       const table = document.querySelector("table");
       if (!table) return alert("Please apply a filter and load the table before exporting.");
 
@@ -236,25 +227,43 @@
       const endDate = document.getElementById("end-date").value;
 
       doc.setFontSize(18);
-      doc.setTextColor(0, 0, 0);  // Set color to black for AMBA
-      doc.text("AMBA LAMINATES PVT LTD.", 105, 15, null, null, 'center');
+      doc.setTextColor(0, 0, 0);
+      doc.text("AMBA LAMINATES PVT LTD.", doc.internal.pageSize.getWidth() / 2, 30, { align: "center" });
 
-      let headingText = `Sales Summary`;
+      let headingText = "Sales Summary";
       if (startDate && endDate) headingText += ` (${formatDate(startDate)} to ${formatDate(endDate)})`;
+      else if (startDate) headingText += ` (From ${formatDate(startDate)})`;
 
-      doc.setFontSize(14);
-      doc.setTextColor(50, 50, 50);  // Darker text for the heading
-      doc.text(headingText, 105, 30, null, null, 'center');
+      doc.setFontSize(12);
+      doc.text(headingText, doc.internal.pageSize.getWidth() / 2, 50, { align: "center" });
 
       doc.autoTable({
-        html: 'table',
-        startY: 35,
-        theme: 'grid',
-        headStyles: { fillColor: '#2ecc71', textColor: '#fff', fontSize: 10, fontStyle: 'bold' },
-        styles: { fontSize: 10, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.5 }  // Darker lines in the table
+        html: table,
+        startY: 70,
+        theme: "grid",
+        headStyles: {
+          fillColor: [46, 204, 113],
+          textColor: 255,
+          fontSize: 9,
+          halign: "center"
+        },
+        bodyStyles: {
+          fontSize: 8,
+          halign: "center"
+        },
+        styles: {
+          overflow: "linebreak",
+          cellPadding: 3,
+          font: "helvetica",
+          textColor: [0, 0, 0],
+          lineColor: [200, 200, 200],
+          lineWidth: 0.2,
+        },
+        margin: { top: 70 }
       });
 
-      doc.save(`Sales_Summary_Amba_${formatDate(startDate)}_to_${formatDate(endDate)}.pdf`);
+      const filename = `Sales_Summary_Amba_${formatDate(startDate)}_to_${formatDate(endDate)}.pdf`;
+      doc.save(filename);
     }
   </script>
 </body>

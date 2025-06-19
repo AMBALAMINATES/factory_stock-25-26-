@@ -1,105 +1,306 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AMBA SALES SUMMARY</title>
-  <link rel="icon" href="images.jpg" type="image/x-icon">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AMBA SALES SUMMARY</title>
+<link rel="icon" href="images.jpg" type="image/x-icon" />
 
-  <!-- Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+<!-- External libs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding: 20px;
-      background-color: #f9f9f9;
-      color: #333;
+<style>
+  /* Reset & base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0; padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f3f7;
+    color: #2c3e50;
+  }
+  h2 {
+    text-align: center;
+    margin: 25px 0 15px;
+    font-weight: 700;
+    color: #27ae60;
+    letter-spacing: 1.5px;
+  }
+
+  /* Container */
+  .container {
+    max-width: 1140px;
+    margin: auto;
+    padding: 0 20px 40px;
+  }
+
+  /* Filters panel */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 25px;
+    background: #fff;
+    padding: 20px 25px;
+    border-radius: 10px;
+    box-shadow: 0 8px 18px rgb(0 0 0 / 0.1);
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    flex: 1 1 220px;
+  }
+
+  .filter-group label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #34495e;
+  }
+
+  input[type="date"] {
+    padding: 10px 14px;
+    border: 1.8px solid #bdc3c7;
+    border-radius: 7px;
+    font-size: 15px;
+    transition: border-color 0.3s ease;
+  }
+  input[type="date"]:focus {
+    outline: none;
+    border-color: #27ae60;
+    box-shadow: 0 0 6px #27ae60aa;
+  }
+
+  /* Select2 custom styling */
+  .select2-container--default .select2-selection--multiple {
+    border: 1.8px solid #bdc3c7;
+    border-radius: 7px;
+    min-height: 42px;
+    padding: 4px 10px;
+    font-size: 15px;
+    transition: border-color 0.3s ease;
+  }
+  .select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: #27ae60;
+    box-shadow: 0 0 6px #27ae60aa;
+  }
+  .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #27ae60;
+    border: none;
+    color: white;
+    padding: 2px 9px;
+    margin-top: 4px;
+    margin-right: 6px;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: #d1e7dc;
+    margin-right: 6px;
+  }
+  .select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #27ae60;
+    color: white;
+  }
+
+  /* Buttons */
+  .buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 30px;
+  }
+  button {
+    background-color: #27ae60;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 28px;
+    color: white;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgb(39 174 96 / 0.4);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+    min-width: 140px;
+  }
+  button:hover {
+    background-color: #219150;
+    box-shadow: 0 7px 18px rgb(33 145 80 / 0.7);
+  }
+  button:active {
+    transform: scale(0.97);
+  }
+
+  /* Table container with horizontal scroll */
+  #table-container {
+    background: white;
+    border-radius: 10px;
+    padding: 15px 15px 5px;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.1);
+    overflow-x: auto;
+  }
+
+  /* Table styling */
+  table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    min-width: 750px;
+  }
+  thead tr {
+    background: #27ae60;
+    color: white;
+    font-weight: 700;
+  }
+  th, td {
+    padding: 14px 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+  }
+  tbody tr:nth-child(even) {
+    background: #f9f9f9;
+  }
+  tbody tr:hover {
+    background-color: #d5f0d8;
+  }
+  th:first-child, td:first-child {
+    text-align: left;
+    padding-left: 18px;
+  }
+  /* Footer totals row */
+  tfoot tr {
+    background-color: #2ecc71;
+    font-weight: 700;
+    color: white;
+    border-top: 2px solid #27ae60;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 720px) {
+    .filters, .buttons {
+      flex-direction: column;
+      align-items: stretch;
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #2c3e50;
-    }
-    label {
-      margin-right: 15px;
-      font-weight: 500;
-    }
-    input[type="date"] {
-      padding: 8px 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      margin-right: 10px;
+    .filter-group {
+      min-width: auto;
+      width: 100%;
     }
     button {
-      margin: 10px 5px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 6px;
-      background-color: #3498db;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #2980b9;
+      width: 100%;
+      min-width: auto;
     }
     table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 30px;
-      background-color: white;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-      border-radius: 6px;
-      overflow: hidden;
+      min-width: 100%;
     }
-    th, td {
-      padding: 12px;
-      text-align: center;
-      border-bottom: 1px solid #eee;
-    }
-    th {
-      background-color: #2ecc71;
-      color: white;
-      font-weight: 600;
-    }
-    tbody tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
-    tbody tr:hover {
-      background-color: #eaf6ff;
-    }
-    #table-container {
-      overflow-x: auto;
-    }
-  </style>
+  }
+</style>
+
 </head>
 <body>
-  <h2 id="heading">Sales Summary Amba</h2>
+  <div class="container">
+    <h2 id="heading">Sales Summary Amba</h2>
 
-  <label>Start Date: <input type="date" id="start-date" /></label>
-  <label>End Date: <input type="date" id="end-date" /></label>
-  <button onclick="fetchAndRender()">Apply Filter</button>
-  <button onclick="exportToExcel()">Export to Excel</button>
-  <button onclick="exportToPDF()">Export to PDF</button>
-  <button onclick="window.location.href='index.html'">Back</button>
+    <div class="filters" role="region" aria-label="Filter controls">
+      <div class="filter-group">
+        <label for="start-date">Start Date</label>
+        <input type="date" id="start-date" aria-describedby="startDateHelp" />
+      </div>
+      <div class="filter-group">
+        <label for="end-date">End Date</label>
+        <input type="date" id="end-date" aria-describedby="endDateHelp" />
+      </div>
+      <div class="filter-group" style="flex: 2 1 300px;">
+        <label for="party-select">Select Party</label>
+        <select id="party-select" multiple="multiple" aria-multiselectable="true" aria-describedby="partyHelp" style="width: 100%;"></select>
+      </div>
+    </div>
 
-  <div id="table-container"></div>
+    <div class="buttons">
+      <button type="button" id="apply-btn" aria-label="Apply filters">Apply Filter</button>
+      <button type="button" id="export-excel-btn" aria-label="Export to Excel">Export to Excel</button>
+      <button type="button" id="export-pdf-btn" aria-label="Export to PDF">Export to PDF</button>
+      <button type="button" id="back-btn" aria-label="Back to Home">Back</button>
+    </div>
 
-  <script>
-    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5ZO4mvjCEAbv4l3-bZUOwBvLl_d6aHPtvYinZPxZ1NpCq4nyjVFrFV_nDXIRpga-htqmsCQm04e3b/pub?gid=0&single=true&output=csv";
+    <div id="table-container" aria-live="polite" aria-relevant="all"></div>
+  </div>
 
-    async function fetchAndRender() {
-      const start = document.getElementById("start-date").value;
-      const end = document.getElementById("end-date").value;
+<script>
+  const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5ZO4mvjCEAbv4l3-bZUOwBvLl_d6aHPtvYinZPxZ1NpCq4nyjVFrFV_nDXIRpga-htqmsCQm04e3b/pub?gid=0&single=true&output=csv";
+
+  let allParties = [];
+
+  $(document).ready(function () {
+    $('#party-select').select2({
+      placeholder: "Select parties",
+      allowClear: true,
+      closeOnSelect: false,
+      width: 'resolve',
+    });
+
+    loadParties();
+
+    // Event listeners
+    $('#apply-btn').on('click', fetchAndRender);
+    $('#export-excel-btn').on('click', exportToExcel);
+    $('#export-pdf-btn').on('click', exportToPDF);
+    $('#back-btn').on('click', () => {
+      window.location.href = 'index.html';
+    });
+  });
+
+  async function loadParties() {
+    try {
       const res = await fetch(sheetUrl);
       const csv = await res.text();
+      const rows = csv.trim().split("\n").map(r => r.split(","));
+      const partyIndex = 3;
+      const partiesSet = new Set();
 
-      const rows = csv.split("\n").map(r => r.split(","));
+      rows.slice(1).forEach(row => {
+        const party = row[partyIndex]?.trim();
+        if (party && party.toUpperCase() !== "NA" && party.toUpperCase() !== "#N/A") {
+          partiesSet.add(party);
+        }
+      });
+
+      allParties = Array.from(partiesSet).sort();
+      const select = $('#party-select');
+      select.empty();
+      allParties.forEach(party => {
+        const option = new Option(party, party, false, false);
+        select.append(option);
+      });
+      select.trigger('change');
+    } catch (err) {
+      alert("Error loading parties. Please try again later.");
+      console.error(err);
+    }
+  }
+
+  async function fetchAndRender() {
+    const start = document.getElementById("start-date").value;
+    const end = document.getElementById("end-date").value;
+    const selectedParties = $('#party-select').val();
+
+    try {
+      const res = await fetch(sheetUrl);
+      const csv = await res.text();
+      const rows = csv.trim().split("\n").map(r => r.split(","));
+
       const dateIndex = 0, qtyIndex = 2, partyIndex = 3, catIndex = 4;
 
       const dataMap = {};
@@ -112,7 +313,10 @@
         const party = row[partyIndex]?.trim();
         const category = row[catIndex]?.trim();
         if (!date || !party || isInvalidCategory(category)) return;
+
         if ((start && date < new Date(start)) || (end && date > new Date(end))) return;
+
+        if (selectedParties && selectedParties.length > 0 && !selectedParties.includes(party)) return;
 
         const key = `${party}_${category}`;
         dataMap[key] = (dataMap[key] || 0) + qty;
@@ -147,7 +351,7 @@
       });
       parties.sort((a, b) => partyTotals[b] - partyTotals[a]);
 
-      let html = `<table><thead><tr><th>Party Name</th>`;
+      let html = `<table aria-label="Sales summary table"><thead><tr><th>Party Name</th>`;
       categories.forEach(cat => html += `<th>${cat}</th>`);
       html += `<th>Grand Total</th></tr></thead><tbody>`;
 
@@ -166,105 +370,115 @@
         html += `<td><b>${rowTotal.toFixed(2)}</b></td></tr>`;
       });
 
-      html += `<tr><th>Grand Total</th>`;
-      categories.forEach(cat => html += `<th><b>${(colTotals[cat] || 0).toFixed(2)}</b></th>`);
-      html += `<th><b>${grandTotalAll.toFixed(2)}</b></th></tr></tbody></table>`;
+      html += `<tfoot><tr><th>Grand Total</th>`;
+      categories.forEach(cat => html += `<th>${(colTotals[cat] || 0).toFixed(2)}</th>`);
+      html += `<th>${grandTotalAll.toFixed(2)}</th></tr></tfoot>`;
+
+      html += `</tbody></table>`;
 
       document.getElementById("table-container").innerHTML = html;
       updateHeading(start, end);
+    } catch (err) {
+      alert("Error loading sales data. Please try again later.");
+      console.error(err);
     }
+  }
 
-    function parseDate(dateStr) {
-      if (!dateStr) return null;
-      const [d, m, y] = dateStr.split("/");
-      return new Date(`${y}-${m}-${d}`);
+  function parseDate(dateStr) {
+    if (!dateStr) return null;
+    const parts = dateStr.split("/");
+    if(parts.length !== 3) return null;
+    const [d, m, y] = parts;
+    return new Date(`${y}-${m}-${d}`);
+  }
+
+  function isInvalidCategory(category) {
+    return !category || category.toUpperCase() === "NA" || category.toUpperCase() === "#N/A";
+  }
+
+  function updateHeading(start, end) {
+    const heading = document.getElementById("heading");
+    if (start && end) {
+      heading.textContent = `Sales Summary From (${formatDate(start)} to ${formatDate(end)})`;
+    } else if (start) {
+      heading.textContent = `Sales Summary from (${formatDate(start)})`;
+    } else {
+      heading.textContent = "Sales Summary Amba";
     }
+  }
 
-    function isInvalidCategory(category) {
-      return !category || category.toUpperCase() === "NA" || category.toUpperCase() === "#N/A";
-    }
+  function formatDate(dateStr) {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = String(date.getFullYear()).slice(2);
+    return `${day}-${month}-${year}`;
+  }
 
-    function updateHeading(start, end) {
-      const heading = document.getElementById("heading");
-      if (start && end) {
-        heading.innerHTML = `Sales Summary From (${formatDate(start)} to ${formatDate(end)})`;
-      } else if (start) {
-        heading.innerHTML = `Sales Summary from (${formatDate(start)})`;
-      } else {
-        heading.innerHTML = "Sales Summary Amba";
-      }
-    }
+  function exportToExcel() {
+    const table = document.querySelector("table");
+    if (!table) return alert("Please apply a filter and load the table before exporting.");
 
-    function formatDate(dateStr) {
-      const date = new Date(dateStr);
-      const day = String(date.getDate()).padStart(2, "0");
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const year = String(date.getFullYear()).slice(2);
-      return `${day}-${month}-${year}`;
-    }
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.table_to_sheet(table);
+    XLSX.utils.book_append_sheet(wb, ws, "Sales Summary");
 
-    function exportToExcel() {
-      const table = document.querySelector("table");
-      if (!table) return alert("Please apply a filter and load the table before exporting.");
+    const startDate = document.getElementById("start-date").value || "";
+    const endDate = document.getElementById("end-date").value || "";
+    const filename = `Sales_Summary_Amba_${formatDate(startDate)}_to_${formatDate(endDate)}.xlsx`;
+    XLSX.writeFile(wb, filename);
+  }
 
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.table_to_sheet(table);
+  function exportToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("landscape", "pt", "a4");
+    const table = document.querySelector("table");
+    if (!table) return alert("Please apply a filter and load the table before exporting.");
 
-      XLSX.utils.book_append_sheet(wb, ws, "Sales Summary");
+    const startDate = document.getElementById("start-date").value;
+    const endDate = document.getElementById("end-date").value;
 
-      const filename = `Sales_Summary_Amba_${formatDate(document.getElementById("start-date").value)}_to_${formatDate(document.getElementById("end-date").value)}.xlsx`;
-      XLSX.writeFile(wb, filename);
-    }
+    doc.setFontSize(18);
+    doc.setTextColor(0, 0, 0);
+    doc.text("AMBA LAMINATES PVT LTD.", doc.internal.pageSize.getWidth() / 2, 30, { align: "center" });
 
-    function exportToPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF("landscape", "pt", "a4");
+    let headingText = "Sales Summary";
+    if (startDate && endDate) headingText += ` (${formatDate(startDate)} to ${formatDate(endDate)})`;
+    else if (startDate) headingText += ` (From ${formatDate(startDate)})`;
 
-      const table = document.querySelector("table");
-      if (!table) return alert("Please apply a filter and load the table before exporting.");
+    doc.setFontSize(12);
+    doc.text(headingText, doc.internal.pageSize.getWidth() / 2, 50, { align: "center" });
 
-      const startDate = document.getElementById("start-date").value;
-      const endDate = document.getElementById("end-date").value;
+    doc.autoTable({
+      html: table,
+      startY: 70,
+      theme: "grid",
+      headStyles: {
+        fillColor: [39, 174, 96],
+        textColor: 255,
+        fontSize: 9,
+        halign: "center"
+      },
+      bodyStyles: {
+        fontSize: 8,
+        halign: "center"
+      },
+      styles: {
+        overflow: "linebreak",
+        cellPadding: 3,
+        font: "helvetica",
+        textColor: [0, 0, 0],
+        lineColor: [200, 200, 200],
+        lineWidth: 0.2,
+      },
+      margin: { top: 70 }
+    });
 
-      doc.setFontSize(18);
-      doc.setTextColor(0, 0, 0);
-      doc.text("AMBA LAMINATES PVT LTD.", doc.internal.pageSize.getWidth() / 2, 30, { align: "center" });
+    const filename = `Sales_Summary_Amba_${formatDate(startDate)}_to_${formatDate(endDate)}.pdf`;
+    doc.save(filename);
+  }
+</script>
 
-      let headingText = "Sales Summary";
-      if (startDate && endDate) headingText += ` (${formatDate(startDate)} to ${formatDate(endDate)})`;
-      else if (startDate) headingText += ` (From ${formatDate(startDate)})`;
-
-      doc.setFontSize(12);
-      doc.text(headingText, doc.internal.pageSize.getWidth() / 2, 50, { align: "center" });
-
-      doc.autoTable({
-        html: table,
-        startY: 70,
-        theme: "grid",
-        headStyles: {
-          fillColor: [46, 204, 113],
-          textColor: 255,
-          fontSize: 9,
-          halign: "center"
-        },
-        bodyStyles: {
-          fontSize: 8,
-          halign: "center"
-        },
-        styles: {
-          overflow: "linebreak",
-          cellPadding: 3,
-          font: "helvetica",
-          textColor: [0, 0, 0],
-          lineColor: [200, 200, 200],
-          lineWidth: 0.2,
-        },
-        margin: { top: 70 }
-      });
-
-      const filename = `Sales_Summary_Amba_${formatDate(startDate)}_to_${formatDate(endDate)}.pdf`;
-      doc.save(filename);
-    }
-  </script>
 </body>
 </html>

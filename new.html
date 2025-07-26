@@ -224,6 +224,10 @@
         <label for="party-select">Select Party</label>
         <select id="party-select" multiple style="width: 100%;"></select>
       </div>
+      <div class="filter-group" style="flex:2;">
+        <label for="category-select">Select Category</label>
+        <select id="category-select" multiple style="width: 100%;"></select>
+      </div>
     </div>
 
     <div class="buttons">
@@ -240,28 +244,38 @@
   const dispatch2025Url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5ZO4mvjCEAbv4l3-bZUOwBvLl_d6aHPtvYinZPxZ1NpCq4nyjVFrFV_nDXIRpga-htqmsCQm04e3b/pub?gid=0&single=true&output=csv";
 
   $(document).ready(() => {
-    $('#party-select').select2({ placeholder: "Select Party", allowClear: true });
+    $('#party-select, #category-select').select2({ placeholder: "Select", allowClear: true });
     $('#apply-btn').click(loadData);
     $('#export-excel-btn').click(exportToExcel);
     $('#export-pdf-btn').click(exportToPDF);
-    preloadParties(); // load all parties from both sheets
+    preloadPartiesAndCategories();
   });
 
-  async function preloadParties() {
+  async function preloadPartiesAndCategories() {
     const sheet1 = await fetchCSV(dispatch2024Url);
     const sheet2 = await fetchCSV(dispatch2025Url);
     const parties = new Set();
+    const categories = new Set();
 
-    // ✅ FY24: ONLY Column E (index 4)
-    sheet1.forEach(r => { if (r[4]) parties.add(r[4].trim()); });
+    sheet1.forEach(r => {
+      if (r[3]) parties.add(r[3].trim());
+      if (r[4]) categories.add(r[4].trim());
+    });
+    sheet2.forEach(r => {
+      if (r[3]) parties.add(r[3].trim());
+      if (r[4]) categories.add(r[4].trim());
+    });
 
-    // ✅ FY25: party in Column D (index 3)
-    sheet2.forEach(r => { if (r[3]) parties.add(r[3].trim()); });
+    const sortedParties = Array.from(parties).sort();
+    const sortedCategories = Array.from(categories).sort();
 
-    const sorted = Array.from(parties).sort();
-    const select = $('#party-select');
-    select.empty();
-    sorted.forEach(p => select.append(new Option(p, p)));
+    const partySelect = $('#party-select');
+    partySelect.empty();
+    sortedParties.forEach(p => partySelect.append(new Option(p, p)));
+
+    const catSelect = $('#category-select');
+    catSelect.empty();
+    sortedCategories.forEach(c => catSelect.append(new Option(c, c)));
   }
 
   async function fetchCSV(url) {
@@ -280,22 +294,22 @@
       fetchCSV(dispatch2024Url), fetchCSV(dispatch2025Url)
     ]);
 
-    const data = [
-      // FY24: party = col E (index 4)
+    let data = [
       ...sheet1.map(r => ({
         date: parseDate(r[0]),
         qty: parseFloat(r[2]) || 0,
-        party: (r[4] || "").trim(),
-        category: (r[5] || "").trim()
+        party: (r[3] || "").trim(),
+        category: (r[4] || "").trim()
       })),
-      // FY25: party = col D (index 3)
       ...sheet2.map(r => ({
         date: parseDate(r[0]),
         qty: parseFloat(r[2]) || 0,
         party: (r[3] || "").trim(),
         category: (r[4] || "").trim()
       }))
-    ].filter(row => {
+    ];
+
+    data = data.filter(row => {
       if (!row.date || !row.party || !row.category || isNaN(row.qty)) return false;
       if (["NA", "#N/A", "", undefined].includes(row.category.toUpperCase())) return false;
       const from = start ? new Date(start) : null;
@@ -304,6 +318,9 @@
       if (to && row.date > to) return false;
       return true;
     });
+
+    // ✅ Sort by date descending
+    data.sort((a, b) => b.date - a.date);
 
     renderTable(data);
     updateHeading(start, end);
@@ -323,8 +340,11 @@
   }
 
   function renderTable(data) {
-    const selected = $('#party-select').val();
-    if (selected && selected.length) data = data.filter(d => selected.includes(d.party));
+    const selectedParties = $('#party-select').val();
+    const selectedCategories = $('#category-select').val();
+
+    if (selectedParties?.length) data = data.filter(d => selectedParties.includes(d.party));
+    if (selectedCategories?.length) data = data.filter(d => selectedCategories.includes(d.category));
 
     const summary = {}, parties = new Set(), categories = new Set();
     data.forEach(({ party, category, qty }) => {
@@ -332,24 +352,24 @@
       summary[key] = (summary[key] || 0) + qty;
       parties.add(party); categories.add(category);
     });
+
     const fixedCategoryOrder = [
-  "Z Plus series/1.0mm",
-  "Decopedia/0.8mm",
-  "OGAAN DOOR SKIN",
-  "FACELAM 0.75MM",
-  "FACELAM 0.92MM",
-  "Liner",
-  "FACELAM DOOR SKIN",
-  "A2 GRADE",
-  "MIXC -GRADE",
-  "MIXA2-GRADE"
-];
+      "Z Plus series/1.0mm",
+      "Decopedia/0.8mm",
+      "OGAAN DOOR SKIN",
+      "FACELAM 0.75MM",
+      "FACELAM 0.92MM",
+      "Liner",
+      "FACELAM DOOR SKIN",
+      "A2 GRADE",
+      "MIXC -GRADE",
+      "MIXA2-GRADE"
+    ];
 
-
-   const catList = [
-  ...fixedCategoryOrder.filter(cat => categories.has(cat)),
-  ...[...categories].filter(cat => !fixedCategoryOrder.includes(cat))
-];
+    const catList = [
+      ...fixedCategoryOrder.filter(cat => categories.has(cat)),
+      ...[...categories].filter(cat => !fixedCategoryOrder.includes(cat))
+    ];
 
     const partyList = [...parties].sort();
     let html = `<table id="summary-table"><thead><tr><th>Party</th>`;

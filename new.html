@@ -371,12 +371,24 @@
       ...[...categories].filter(cat => !fixedCategoryOrder.includes(cat))
     ];
 
-    const partyList = [...parties].sort();
+    // Compute total per party for sorting
+    const partyTotals = [...parties].map(p => {
+      let total = 0;
+      catList.forEach(c => {
+        total += summary[`${p}_${c}`] || 0;
+      });
+      return { party: p, total };
+    });
+
+    // Sort descending by total
+    partyTotals.sort((a, b) => b.total - a.total);
+
     let html = `<table id="summary-table"><thead><tr><th>Party</th>`;
-    catList.forEach(c => html += `<th>${c}</th>`); html += `<th>Total</th></tr></thead><tbody>`;
+    catList.forEach(c => html += `<th>${c}</th>`);
+    html += `<th>Total</th></tr></thead><tbody>`;
 
     const colTotals = {}, rowTotals = [];
-    partyList.forEach(p => {
+    partyTotals.forEach(({ party: p, total }) => {
       let rowTotal = 0;
       html += `<tr><td>${p}</td>`;
       catList.forEach(c => {

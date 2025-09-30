@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AMBA SALES SUMMARY</title>
-  <link rel="icon" href="images.jpg" type="image/x-icon" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AMBA SALES SUMMARY</title>
+  <link rel="icon" href="images.jpg" type="image/x-icon" />
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
-  <style>
-  /* Reset & base */
-  * {
+  <style>
+  
+   * {
     box-sizing: border-box;
   }
   body {
@@ -83,7 +83,7 @@
   .select2-container--default .select2-selection--multiple {
     border: 1.8px solid #bdc3c7;
     border-radius: 7px;
-    min-height: 42px;
+    min-height: 2px;
     padding: 4px 10px;
     font-size: 15px;
     transition: border-color 0.3s ease;
@@ -186,6 +186,7 @@
     color: white;
     border-top: 2px solid #27ae60;
   }
+  
 
   /* Responsive adjustments */
   @media (max-width: 720px) {
@@ -205,236 +206,273 @@
       min-width: 100%;
     }
   }
-</style>
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h2 id="heading">Sales Summary Amba</h2>
+  <div class="container">
+    <h2 id="heading">Sales Summary Amba</h2>
 
-    <div class="filters">
-      <div class="filter-group">
-        <label for="start-date">Start Date</label>
-        <input type="date" id="start-date">
-      </div>
-      <div class="filter-group">
-        <label for="end-date">End Date</label>
-        <input type="date" id="end-date">
-      </div>
-      <div class="filter-group" style="flex:2;">
-        <label for="party-select">Select Party</label>
-        <select id="party-select" multiple style="width: 100%;"></select>
-      </div>
-      <div class="filter-group" style="flex:2;">
-        <label for="category-select">Select Category</label>
-        <select id="category-select" multiple style="width: 100%;"></select>
-      </div>
-    </div>
+    <div class="filters">
+      <div class="filter-group">
+        <label for="start-date">Start Date</label>
+        <input type="date" id="start-date">
+      </div>
+      <div class="filter-group">
+        <label for="end-date">End Date</label>
+        <input type="date" id="end-date">
+      </div>
+      <div class="filter-group" style="flex:2;">
+        <label for="state-select">Select State</label>
+        <select id="state-select" multiple style="width: 100%;"></select>
+      </div>
+      <div class="filter-group" style="flex:2;">
+        <label for="party-select">Select Party</label>
+        <select id="party-select" multiple style="width: 100%;"></select>
+      </div>
+      <div class="filter-group" style="flex:2;">
+        <label for="category-select">Select Category</label>
+        <select id="category-select" multiple style="width: 20%;"></select>
+      </div>
+    </div>
 
-    <div class="buttons">
-      <button id="apply-btn">Apply Filter</button>
-      <button id="export-excel-btn">Export to Excel</button>
-      <button id="export-pdf-btn">Export to PDF</button>
-    </div>
+    <div class="buttons">
+      <button id="apply-btn">Apply Filter</button>
+      <button id="export-excel-btn">Export to Excel</button>
+      <button id="export-pdf-btn">Export to PDF</button>
+    </div>
 
-    <div id="table-container"></div>
-  </div>
+    <div id="table-container"></div>
+  </div>
 
 <script>
-  const dispatch2024Url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQHI7lyC_Dt5v8lJYm3UZN4ZsktGq-n9QbCbUWGlxA4qIzGOm1LHSUfFVJz4oVTdnX-CO3rgVn1XSux/pub?gid=0&single=true&output=csv";
-  const dispatch2025Url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5ZO4mvjCEAbv4l3-bZUOwBvLl_d6aHPtvYinZPxZ1NpCq4nyjVFrFV_nDXIRpga-htqmsCQm04e3b/pub?gid=0&single=true&output=csv";
+  const dispatch2024Url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQHI7lyC_Dt5v8lJYm3UZN4ZsktGq-n9QbCbUWGlxA4qIzGOm1LHSUfFVJz4oVTdnX-CO3rgVn1XSux/pub?gid=0&single=true&output=csv";
+  const dispatch2025Url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5ZO4mvjCEAbv4l3-bZUOwBvLl_d6aHPtvYinZPxZ1NpCq4nyjVFrFV_nDXIRpga-htqmsCQm04e3b/pub?gid=0&single=true&output=csv";
+  const partiesStateUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5ZO4mvjCEAbv4l3-bZUOwBvLl_d6aHPtvYinZPxZ1NpCq4nyjVFrFV_nDXIRpga-htqmsCQm04e3b/pub?gid=779828596&single=true&output=csv"; // Replace this with your actual URL
 
-  $(document).ready(() => {
-    $('#party-select, #category-select').select2({ placeholder: "Select", allowClear: true });
-    $('#apply-btn').click(loadData);
-    $('#export-excel-btn').click(exportToExcel);
-    $('#export-pdf-btn').click(exportToPDF);
-    preloadPartiesAndCategories();
-  });
+  $(document).ready(() => {
+    $('#party-select, #category-select, #state-select').select2({ placeholder: "Select", allowClear: true });
+    $('#apply-btn').click(loadData);
+    $('#export-excel-btn').click(exportToExcel);
+    $('#export-pdf-btn').click(exportToPDF);
+    preloadDropdowns();
+  });
 
-  async function preloadPartiesAndCategories() {
-    const sheet1 = await fetchCSV(dispatch2024Url);
-    const sheet2 = await fetchCSV(dispatch2025Url);
-    const parties = new Set();
-    const categories = new Set();
+  async function preloadDropdowns() {
+    const [sheet1, sheet2, partiesSheet] = await Promise.all([
+      fetchCSV(dispatch2024Url),
+      fetchCSV(dispatch2025Url),
+      fetchCSV(partiesStateUrl)
+    ]);
 
-    sheet1.forEach(r => {
-      if (r[3]) parties.add(r[3].trim());
-      if (r[4]) categories.add(r[4].trim());
-    });
-    sheet2.forEach(r => {
-      if (r[3]) parties.add(r[3].trim());
-      if (r[4]) categories.add(r[4].trim());
-    });
+    const parties = new Set();
+    const categories = new Set();
+    const states = new Set();
 
-    const sortedParties = Array.from(parties).sort();
-    const sortedCategories = Array.from(categories).sort();
+    // Party and Category from sales sheets
+    sheet1.forEach(r => {
+      if (r[3]) parties.add(r[3].trim());
+      if (r[4]) categories.add(r[4].trim());
+    });
+    sheet2.forEach(r => {
+      if (r[3]) parties.add(r[3].trim());
+      if (r[4]) categories.add(r[4].trim());
+    });
 
-    const partySelect = $('#party-select');
-    partySelect.empty();
-    sortedParties.forEach(p => partySelect.append(new Option(p, p)));
+    // States and Parties from parties sheet - assuming columns: 0=party name, 1=state name or adjust indexes accordingly
+    partiesSheet.forEach(r => {
+      if (r[0]) parties.add(r[0].trim());
+      if (r[1]) states.add(r[1].trim());
+    });
 
-    const catSelect = $('#category-select');
-    catSelect.empty();
-    sortedCategories.forEach(c => catSelect.append(new Option(c, c)));
-  }
+    // Sort and fill party select
+    const sortedParties = Array.from(parties).sort();
+    const partySelect = $('#party-select');
+    partySelect.empty();
+    sortedParties.forEach(p => partySelect.append(new Option(p, p)));
 
-  async function fetchCSV(url) {
-    const res = await fetch(url);
-    const text = await res.text();
-    return text.trim().split("\n").slice(1).map(r => r.split(","));
-  }
+    // Sort and fill category select
+    const sortedCategories = Array.from(categories).sort();
+    const catSelect = $('#category-select');
+    catSelect.empty();
+    sortedCategories.forEach(c => catSelect.append(new Option(c, c)));
 
-  async function loadData() {
-    const start = $("#start-date").val();
-    const end = $("#end-date").val();
+    // Sort and fill state select
+    const sortedStates = Array.from(states).sort();
+    const stateSelect = $('#state-select');
+    stateSelect.empty();
+    sortedStates.forEach(s => stateSelect.append(new Option(s, s)));
+  }
 
-    if (!start && !end) return alert("Please select a start date or end date");
+  async function fetchCSV(url) {
+    const res = await fetch(url);
+    const text = await res.text();
+    return text.trim().split("\n").slice(1).map(r => r.split(","));
+  }
 
-    const [sheet1, sheet2] = await Promise.all([
-      fetchCSV(dispatch2024Url), fetchCSV(dispatch2025Url)
-    ]);
+  async function loadData() {
+    const start = $("#start-date").val();
+    const end = $("#end-date").val();
+    if (!start && !end) return alert("Please select start date or end date");
 
-    let data = [
-      ...sheet1.map(r => ({
-        date: parseDate(r[0]),
-        qty: parseFloat(r[2]) || 0,
-        party: (r[3] || "").trim(),
-        category: (r[4] || "").trim()
-      })),
-      ...sheet2.map(r => ({
-        date: parseDate(r[0]),
-        qty: parseFloat(r[2]) || 0,
-        party: (r[3] || "").trim(),
-        category: (r[4] || "").trim()
-      }))
-    ];
+    const [sheet1, sheet2, partiesSheet] = await Promise.all([
+      fetchCSV(dispatch2024Url),
+      fetchCSV(dispatch2025Url),
+      fetchCSV(partiesStateUrl)
+    ]);
 
-    data = data.filter(row => {
-      if (!row.date || !row.party || !row.category || isNaN(row.qty)) return false;
-      if (["NA", "#N/A", "", undefined].includes(row.category.toUpperCase())) return false;
-      const from = start ? new Date(start) : null;
-      const to = end ? new Date(end) : null;
-      if (from && row.date < from) return false;
-      if (to && row.date > to) return false;
-      return true;
-    });
+    // Create a mapping party => state from parties sheet
+    const partyToState = {};
+    partiesSheet.forEach(r => {
+      const party = r[0]?.trim();
+      const state = r[1]?.trim();
+      if(party && state) partyToState[party] = state;
+    });
 
-    // ✅ Sort by date descending
-    data.sort((a, b) => b.date - a.date);
+    let data = [
+      ...sheet1.map(r => ({
+        date: parseDate(r[0]),
+        qty: parseFloat(r[2]) || 0,
+        party: (r[3] || "").trim(),
+        category: (r[4] || "").trim(),
+        state: partyToState[(r[3] || "").trim()] || ""
+      })),
+      ...sheet2.map(r => ({
+        date: parseDate(r[0]),
+        qty: parseFloat(r[2]) || 0,
+        party: (r[3] || "").trim(),
+        category: (r[4] || "").trim(),
+        state: partyToState[(r[3] || "").trim()] || ""
+      }))
+    ];
 
-    renderTable(data);
-    updateHeading(start, end);
-  }
+    data = data.filter(row => {
+      if (!row.date || !row.party || !row.category || isNaN(row.qty)) return false;
+      if (["NA", "#N/A", "", undefined].includes(row.category.toUpperCase())) return false;
+      const from = start ? new Date(start) : null;
+      const to = end ? new Date(end) : null;
+      if (from && row.date < from) return false;
+      if (to && row.date > to) return false;
+      return true;
+    });
 
-  function parseDate(str) {
-    const [d, m, y] = str.split("/");
-    return new Date(`${y}-${m}-${d}`);
-  }
+    // Filter by state
+    const selectedStates = $('#state-select').val();
+    if (selectedStates?.length) {
+      data = data.filter(d => selectedStates.includes(d.state));
+    }
 
-  function updateHeading(start, end) {
-    const heading = document.getElementById("heading");
-    const format = d => new Date(d).toLocaleDateString("en-GB");
-    heading.textContent = start && end
-      ? `Sales Summary (${format(start)} to ${format(end)})`
-      : `Sales Summary (From ${format(start || end)})`;
-  }
+    renderTable(data, selectedStates);
+    updateHeading(start, end, selectedStates);
+  }
 
-  function renderTable(data) {
-    const selectedParties = $('#party-select').val();
-    const selectedCategories = $('#category-select').val();
+  function parseDate(str) {
+    const [d, m, y] = str.split("/");
+    return new Date(`${y}-${m}-${d}`);
+  }
 
-    if (selectedParties?.length) data = data.filter(d => selectedParties.includes(d.party));
-    if (selectedCategories?.length) data = data.filter(d => selectedCategories.includes(d.category));
+  function updateHeading(start, end, states) {
+    const heading = document.getElementById("heading");
+    const format = d => new Date(d).toLocaleDateString("en-GB");
+    const stateText = states && states.length ? " | States: " + states.join(", ") : "";
+    heading.textContent = start && end
+      ? `Sales Summary (${format(start)} to ${format(end)})${stateText}`
+      : `Sales Summary (From ${format(start || end)})${stateText}`;
+  }
 
-    const summary = {}, parties = new Set(), categories = new Set();
-    data.forEach(({ party, category, qty }) => {
-      const key = `${party}_${category}`;
-      summary[key] = (summary[key] || 0) + qty;
-      parties.add(party); categories.add(category);
-    });
+  function renderTable(data) {
+    const selectedParties = $('#party-select').val();
+    const selectedCategories = $('#category-select').val();
 
-    const fixedCategoryOrder = [
-      "Z Plus series/1.0mm",
-      "Decopedia/0.8mm",
-      "OGAAN DOOR SKIN",
-      "FACELAM 0.75MM",
-      "FACELAM 0.92MM",
-      "Liner",
-      "FACELAM DOOR SKIN",
-      "A2 GRADE",
-      "MIXC -GRADE",
-      "MIXA2-GRADE"
-    ];
+    if (selectedParties?.length) data = data.filter(d => selectedParties.includes(d.party));
+    if (selectedCategories?.length) data = data.filter(d => selectedCategories.includes(d.category));
 
-    const catList = [
-      ...fixedCategoryOrder.filter(cat => categories.has(cat)),
-      ...[...categories].filter(cat => !fixedCategoryOrder.includes(cat))
-    ];
+    const summary = {}, parties = new Set(), categories = new Set();
 
-    // Compute total per party for sorting
-    const partyTotals = [...parties].map(p => {
-      let total = 0;
-      catList.forEach(c => {
-        total += summary[`${p}_${c}`] || 0;
-      });
-      return { party: p, total };
-    });
+    data.forEach(({ party, category, qty }) => {
+      const key = `${party}_${category}`;
+      summary[key] = (summary[key] || 0) + qty;
+      parties.add(party); categories.add(category);
+    });
 
-    // Sort descending by total
-    partyTotals.sort((a, b) => b.total - a.total);
+    const fixedCategoryOrder = [
+      "Z Plus series/1.0mm",
+      "Decopedia/0.8mm",
+      "OGAAN DOOR SKIN",
+      "FACELAM 0.75MM",
+      "FACELAM 0.92MM",
+      "Liner",
+      "FACELAM DOOR SKIN",
+      "A2 GRADE",
+      "MIXC -GRADE",
+      "MIXA2-GRADE"
+    ];
 
-    let html = `<table id="summary-table"><thead><tr><th>Party</th>`;
-    catList.forEach(c => html += `<th>${c}</th>`);
-    html += `<th>Total</th></tr></thead><tbody>`;
+    const catList = [
+      ...fixedCategoryOrder.filter(cat => categories.has(cat)),
+      ...[...categories].filter(cat => !fixedCategoryOrder.includes(cat))
+    ];
 
-    const colTotals = {}, rowTotals = [];
-    partyTotals.forEach(({ party: p, total }) => {
-      let rowTotal = 0;
-      html += `<tr><td>${p}</td>`;
-      catList.forEach(c => {
-        const val = summary[`${p}_${c}`] || 0;
-        rowTotal += val;
-        colTotals[c] = (colTotals[c] || 0) + val;
-        html += `<td>${val.toFixed(2)}</td>`;
-      });
-      rowTotals.push(rowTotal);
-      html += `<td><strong>${rowTotal.toFixed(2)}</strong></td></tr>`;
-    });
+    const partyTotals = [...parties].map(p => {
+      let total = 0;
+      catList.forEach(c => {
+        total += summary[`${p}_${c}`] || 0;
+      });
+      return { party: p, total };
+    });
 
-    html += `<tfoot><tr><th>Total</th>`;
-    catList.forEach(c => html += `<th>${(colTotals[c] || 0).toFixed(2)}</th>`);
-    const grand = rowTotals.reduce((a,b) => a+b, 0);
-    html += `<th>${grand.toFixed(2)}</th></tr></tfoot></table>`;
+    partyTotals.sort((a, b) => b.total - a.total);
 
-    document.getElementById("table-container").innerHTML = html;
-  }
+    let html = `<table id="summary-table"><thead><tr><th>Party</th>`;
+    catList.forEach(c => html += `<th>${c}</th>`);
+    html += `<th>Total</th></tr></thead><tbody>`;
 
-  function exportToExcel() {
-    const table = document.getElementById("summary-table");
-    if (!table) return alert("Please run Apply Filter first.");
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.table_to_sheet(table);
-    XLSX.utils.book_append_sheet(wb, ws, "Sales Summary");
-    XLSX.writeFile(wb, "Sales_Summary.xlsx");
-  }
+    const colTotals = {}, rowTotals = [];
+    partyTotals.forEach(({ party: p, total }) => {
+      let rowTotal = 0;
+      html += `<tr><td>${p}</td>`;
+      catList.forEach(c => {
+        const val = summary[`${p}_${c}`] || 0;
+        rowTotal += val;
+        colTotals[c] = (colTotals[c] || 0) + val;
+        html += `<td>${val.toFixed(2)}</td>`;
+      });
+      rowTotals.push(rowTotal);
+      html += `<td><strong>${rowTotal.toFixed(2)}</strong></td></tr>`;
+    });
 
-  function exportToPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF("landscape", "pt", "a4");
-    doc.setFontSize(16);
-    doc.text("AMBA LAMINATES PVT LTD", doc.internal.pageSize.getWidth() / 2, 30, { align: "center" });
-    doc.setFontSize(12);
-    doc.text(document.getElementById("heading").textContent, doc.internal.pageSize.getWidth() / 2, 50, { align: "center" });
-    doc.autoTable({
-      html: '#summary-table',
-      startY: 70,
-      theme: "grid",
-      headStyles: { fillColor: [39,174,96], textColor: 255 },
-      bodyStyles: { fontSize: 8 }
-    });
-    doc.save("Sales_Summary.pdf");
-  }
+    html += `<tfoot><tr><th>Total</th>`;
+    catList.forEach(c => html += `<th>${(colTotals[c] || 0).toFixed(2)}</th>`);
+    const grand = rowTotals.reduce((a,b) => a+b, 0);
+    html += `<th>${grand.toFixed(2)}</th></tr></tfoot></table>`;
+
+    document.getElementById("table-container").innerHTML = html;
+  }
+
+  function exportToExcel() {
+    const table = document.getElementById("summary-table");
+    if (!table) return alert("Please run Apply Filter first.");
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.table_to_sheet(table);
+    XLSX.utils.book_append_sheet(wb, ws, "Sales Summary");
+    XLSX.writeFile(wb, "Sales_Summary.xlsx");
+  }
+
+  function exportToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("landscape", "pt", "a4");
+    doc.setFontSize(16);
+    doc.text("AMBA LAMINATES PVT LTD", doc.internal.pageSize.getWidth() / 2, 30, { align: "center" });
+    doc.setFontSize(12);
+    doc.text(document.getElementById("heading").textContent, doc.internal.pageSize.getWidth() / 2, 50, { align: "center" });
+    doc.autoTable({
+      html: '#summary-table',
+      startY: 70,
+      theme: "grid",
+      headStyles: { fillColor: [39,174,96], textColor: 255 },
+      bodyStyles: { fontSize: 8 }
+    });
+    doc.save("Sales_Summary.pdf");
+  }
 </script>
-
 </body>
 </html>

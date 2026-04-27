@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Parse and combine all
             const parsedOrders2025 = parseCSV(orders2025);
             const parsedOrders2024 = parseCSV(orders2024);
-            const parsedDispatch2025 = parseCSV(dispatch2026);
+            const parsedDispatch2026 = parseCSV(dispatch2026);
             const parsedDispatch2024 = parseCSV(dispatch2024);
             const parsedPress12025 = parseCSV(press12025);
             const parsedPress12024 = parseCSV(press12024);

@@ -18,18 +18,18 @@ document.addEventListener("DOMContentLoaded", function () {
     Promise.all([
         fetch(orders2025Url).then(res => res.text()),
         fetch(orders2024Url).then(res => res.text()),
-        fetch(dispatch2025Url).then(res => res.text()),
+        fetch(dispatch2026Url).then(res => res.text()),
         fetch(dispatch2024Url).then(res => res.text()),
         fetch(press12025Url).then(res => res.text()),
         fetch(press12024Url).then(res => res.text()),
         fetch(press22025Url).then(res => res.text()),
         fetch(press22024Url).then(res => res.text())
     ])
-        .then(([orders2025, orders2024, dispatch2025, dispatch2024, press12025, press12024, press22025, press22024]) => {
+        .then(([orders2025, orders2024, dispatch2026, dispatch2024, press12025, press12024, press22025, press22024]) => {
             // Parse and combine all
             const parsedOrders2025 = parseCSV(orders2025);
             const parsedOrders2024 = parseCSV(orders2024);
-            const parsedDispatch2025 = parseCSV(dispatch2025);
+            const parsedDispatch2025 = parseCSV(dispatch2026);
             const parsedDispatch2024 = parseCSV(dispatch2024);
             const parsedPress12025 = parseCSV(press12025);
             const parsedPress12024 = parseCSV(press12024);
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const parsedPress22024 = parseCSV(press22024);
 
             ordersRows = [parsedOrders2025[0], ...parsedOrders2025.slice(1), ...parsedOrders2024.slice(1)];
-            dispatchRows = [parsedDispatch2025[0], ...parsedDispatch2025.slice(1), ...parsedDispatch2024.slice(1)];
+            dispatchRows = [parsedDispatch2026[0], ...parsedDispatch2026.slice(1), ...parsedDispatch2024.slice(1)];
             press1Rows = [parsedPress12025[0], ...parsedPress12025.slice(1), ...parsedPress12024.slice(1)];
             press2Rows = [parsedPress22025[0], ...parsedPress22025.slice(1), ...parsedPress22024.slice(1)];
 
